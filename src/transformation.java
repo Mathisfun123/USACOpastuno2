@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class transformation {
@@ -39,7 +40,22 @@ public class transformation {
         if(checkSameMaze(newmaze,finalmaze)){
             transformation[3]= true;
         }
+        newmaze = returnRotateMaze(newmaze);
+        if(n  % 2 ==0 ){
+            int mid = n / 2;
+            for(int i = 0; i< mid; i++){
+                char [] t = intialmaze [i];
+                char [] p = intialmaze [n-(mid+i )];
+                for(int j = 0; j< n; j++){
+                    newmaze[i][j] = p[j];
+                }
+                for(int j = n-(mid+i); j>= 0; j--){
+                    newmaze[i][j] = t[j];
+                }
+            }
+        }else{
 
+        }
 
         boolean happend = false;
         for(int i =1 ; i< transformation.length; i++){
