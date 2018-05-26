@@ -19,9 +19,7 @@ public class paint {
             array[i]= true;
         }
         for( int i = 0; i<101; i++){
-            if(array[i]== true){
-                sum+=1;
-            }
+            sum+= array[i]? 1 : 0;
         }
 out.println(sum);
         out.close();
