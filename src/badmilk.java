@@ -6,80 +6,96 @@ public class badmilk {
     public static void main(String args[]) throws IOException {
         Scanner sc = new Scanner(new File("badmilk" + ".in"));
         PrintWriter out = new PrintWriter(new File("badmilk" + ".out"));
-        int N = sc.nextInt();
-        ArrayList <Person> peoplee = new ArrayList<>();
-        HashMap<Integer,Person> idtoPerson = new HashMap<>();
-        int M = sc.nextInt();
-        int nummilks [] = new int[M];
-        int d = sc.nextInt();
-        int s = sc.nextInt();
-        sc.nextInt();
-        for(int i = 1; i< N+1; i++){
-            Person p = new Person(i);
-            peoplee.add(p);
-            idtoPerson.put(i,p);
-        }
-        for (int i = 0; i < d-1; i++) {
-            int idperson = sc.nextInt();
-            int milkid = sc.nextInt();
-            int timedrank = sc.nextInt();
-            sc.nextLine();
-            //System.out.println(idperson);
-            idtoPerson.get(idperson).addMilkandTime(milkid,timedrank);
-        }
-        ArrayList <Person> peopleSick = new ArrayList<>();
-        for(int i = 0; i< s; i++){
-            int idperson = sc.nextInt();
-            peopleSick.add(idtoPerson.get(idperson));
-            idtoPerson.get(idperson).sick= true;
-            int time= sc.nextInt();
-            if(idtoPerson.get(idperson).earlySick>time){
-                idtoPerson.get(idperson).earlySick= time;
+        int N = sc.nextInt(); //Number of People
+        int m = sc.nextInt(); //Number of MIlk
+        int d = sc.nextInt(); //Line Reading drinks
+        int s = sc.nextInt(); //Line Reading sicks
+        sc.nextLine();
+        Person people [] =new Person[N];
+        ArrayList<Integer> possibleMilks = new ArrayList<>();
+        for(int i = 0; i< d; i++){
+            String [] lninfo = sc.nextLine().split(" ");
+            if(people[Integer.parseInt(lninfo[0])-1] == null){
+                people[Integer.parseInt(lninfo[0])-1]= new Person(Integer.parseInt(lninfo[0]), Integer.parseInt(lninfo[1]), Integer.parseInt(lninfo[2]));
+            }else if(!(people[Integer.parseInt(lninfo[0])-1]==null)){
+                people[Integer.parseInt(lninfo[0])-1].AddMilk(Integer.parseInt(lninfo[1]),Integer.parseInt(lninfo[2]));
             }
         }
-        ArrayList<Integer> potentialMIlks = new ArrayList<>();
-        potentialMIlks= peopleSick.get(0).milksBeforeSick();
-        for (int i = 1; i < peopleSick.size(); i++) {
-            Person person =  peopleSick.get(i);
-            potentialMIlks= intersect(potentialMIlks,person.milksBeforeSick());
+        for(int i = 0; i< s; i++){
+            int idOfSick= sc.nextInt(); int timeOfSick = sc.nextInt();
+            if(i==0){
+               possibleMilks=  people[idOfSick-1].milksPotetnial(timeOfSick);
+            }else{
+                ArrayList <Integer> milkcommontwo = people[idOfSick-1].milksPotetnial(timeOfSick);
+                ArrayList<Integer> truecommon = new ArrayList<>();
+                for (int j = 0; j < possibleMilks.size(); j++) {
+                    if((milkcommontwo.contains(possibleMilks.get(j)))){
+                        truecommon.add(possibleMilks.get(j));
+                    }
+                }
+                possibleMilks= truecommon;
+            }
         }
-        System.out.println(potentialMIlks);
+        //System.out.println(possibleMilks);  WORKS: Telling what milks are bad
+        //Finish Putting People with milk drank
+        //System.out.println(possibleMilks);
+        int amt = 0;
+        for (int i = 0; i < people.length; i++) {
+            System.out.print(" ");
+            Person person = people[i];
+            if(person!=null && person.milkdrank.size()>0){
+                boolean already =false;
+                for(int j = 0; j< possibleMilks.size(); j++){
+                    if(!already && person.milkdrank.contains(possibleMilks.get(j))){
+                        already= true;
+                    }
+                }
+                if(already){
+                    amt++;
+                }
+                //System.out.print(person.milkdrank);
+            }
+        }
+        //System.out.println(amt);
+//        for(int i = 0; i< N; i++){
+//            boolean cond = false;
+//            for(int j = 0; j< possibleMilks.size(); j++){
+//                if(!cond&& people[i] !=null && people[i].milkdrank!=null && people[i].milkdrank.contains(j)){
+//                    amt++;
+//                    cond=true;
+//                    //Deal with break
+//                }
+//            }
+//        }
+        out.println(amt);
         out.close();
     }
-    public static ArrayList<Integer> intersect(ArrayList <Integer> first, ArrayList <Integer> Second){
-        ArrayList<Integer> p = new ArrayList<>();
-        for (int i = 0; i < first.size(); i++) {
-            if(Second.contains(first.get(i))){
-                p.add(first.get(i));
-            }
-            
-        }
-        return p;
-    }
     static class Person{
-        public int id;
-        public  HashMap<Integer, Integer>  timeDrinkBasedOnMilk = new HashMap();
-        public  ArrayList<Integer> MilkDrank = new ArrayList<>();
-        public boolean sick;
-        public int earlySick = Integer.MAX_VALUE;
-        public Person(int idn){
-        id = idn;
+        int id;
+        HashMap<Integer, Integer> milkDrankLeadTime;
+        ArrayList<Integer> milkdrank;
+        public Person(int i, int milknum, int timdrunk){
+            id= i;
+            milkDrankLeadTime= new HashMap<>();
+            milkdrank= new ArrayList<>();
+            milkDrankLeadTime.put(milknum,timdrunk);
+            milkdrank.add(milknum);
         }
-        public void addMilkandTime ( int milkid, int time){
-            if(!MilkDrank.contains(milkid) || timeDrinkBasedOnMilk.get(milkid)>time){
-                if(!MilkDrank.contains(milkid)){MilkDrank.add(milkid);}
-                timeDrinkBasedOnMilk.put(milkid,time);
+        public void AddMilk (int milk, int time){
+            if(!milkDrankLeadTime.containsKey(milk)){
+                milkDrankLeadTime.put(milk,time);
+                if(!(milkdrank.contains(milk))){milkdrank.add(milk);}
             }
         }
-        public ArrayList <Integer> milksBeforeSick(){
-            ArrayList<Integer> retun = new ArrayList<>();
-            for (int i = 0; i < MilkDrank.size(); i++) {
-                Integer integer =  MilkDrank.get(i);
-                if(timeDrinkBasedOnMilk.get(integer)< earlySick){
-                    retun.add(integer);
+        public ArrayList<Integer> milksPotetnial (int time){
+            ArrayList<Integer> potentialToReturn = new ArrayList<>();
+            for (Integer aMilkdrank : milkdrank) {
+                if (milkDrankLeadTime.get(aMilkdrank) < time) {
+                    potentialToReturn.add(aMilkdrank);
                 }
             }
-            return retun;
+            return potentialToReturn;
         }
     }
+
 }
